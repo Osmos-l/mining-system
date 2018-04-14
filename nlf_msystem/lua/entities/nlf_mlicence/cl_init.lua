@@ -6,20 +6,20 @@ surface.CreateFont( "Font", {
 	font = "Coolvetica",
 	size = 50,
 	weight = 1000,
-	antialias = true,
 } )
 
 surface.CreateFont( "Font2", {
     font = "Roboto",
     size = 20,
     weight = 1000,
-    antialias = true,
 } )
 
 function ENT:DrawTranslucent()
 	self:Draw();
 end;
+
 local texture = Material(nlf.msystem.config.npclicenceicon)
+
 function ENT:Draw()
 	self:DrawModel()
 
