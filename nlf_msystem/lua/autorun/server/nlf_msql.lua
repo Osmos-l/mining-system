@@ -3,7 +3,7 @@ local loc =  nlf.msystem.config.langue.LocalLang
 local function M_CreateTable()
 
 	if (!sql.TableExists("player_mlicence"))then
-	sql.Query( "CREATE TABLE player_mlicence( id INTEGER PRIMARY KEY AUTOINCREMENT ,SteamID64 bigint(20), Licenceprix bigint(20), date varchar(255) )" )
+	sql.Query( "CREATE TABLE player_mlicence( id INTEGER PRIMARY KEY AUTOINCREMENT ,SteamID64 bigint(20), name varchar(255),Licenceprix bigint(20), date varchar(255) )" )
 	end 
 	
 	if not file.IsDir("msystem", "DATA") then
@@ -28,11 +28,18 @@ end
 
 hook.Add( "InitPostEntity", "M::InstalSQL", timer.Simple( 0.1, function() M_CreateTable() end ) );
 
-function M_AddLicence( ply )
+concommand.Add("nlf_msystem_reloadtable", function(ply, cmd, args)
+    if !table.HasValue(nlf.msystem.config.adminpanel.access, ply:GetUserGroup()) then return end
+       
 
-local whatdate = os.date()
-	 sql.Query( "INSERT INTO player_mlicence VALUES( NULL, '"..ply:SteamID64().."','"..nlf.msystem.config.amountlicence.."','"..whatdate.."' )" )
-end
+	if (sql.TableExists("player_mlicence"))then
+		sql.Query( "DROP TABLE player_mlicence" )
+		sql.Query( "CREATE TABLE player_mlicence( id INTEGER PRIMARY KEY AUTOINCREMENT ,SteamID64 bigint(20), name varchar(255),Licenceprix bigint(20), date varchar(255) )" )
+				DarkRP.notify(ply, 3, 4, "Table Reload" )
+	end 
+  
+end)
+
 
 function M_CheckMyLicence( ply )
 	if sql.Query("SELECT * FROM player_mlicence WHERE SteamID64 =" .. ply:SteamID64()) then
@@ -164,4 +171,163 @@ hook.Add( "PlayerSay", "nlf_msystemcommand", function( ply, text, team )
 		return ""
 		
 	end
+	
+	if  table.HasValue(nlf.msystem.config.adminpanel.access, ply:GetUserGroup()) and text == "!msystemadmin" then
+	
+		local result = sql.Query("SELECT * FROM player_mlicence")
+		if result then
+			net.Start( "M::OpenAdmin" )
+			net.WriteTable( sql.Query("SELECT * FROM player_mlicence") )
+			net.Send(ply)
+			return ""
+		else 
+			result = {}
+			net.Start( "M::OpenAdmin" )
+			net.WriteTable( result )
+			net.Send(ply)
+			return ""
+		end 
+	end
+end)
+
+net.Receive("M::OpenAdmin:cl", function(len, pl)
+	if  not table.HasValue(nlf.msystem.config.adminpanel.access, pl:GetUserGroup() ) then return end
+	
+	local result = sql.Query("SELECT * FROM player_mlicence")
+		if result then
+			net.Start( "M::OpenAdmin" )
+			net.WriteTable( sql.Query("SELECT * FROM player_mlicence") )
+			net.Send(pl)
+			return ""
+		else 
+			result = {}
+			net.Start( "M::OpenAdmin" )
+			net.WriteTable( result )
+			net.Send(pl)
+			return ""
+		end 
+end)
+
+net.Receive("M::AdminDeletelicence", function(len, pl)
+	if  not table.HasValue(nlf.msystem.config.adminpanel.access, pl:GetUserGroup() ) then return end
+	local SteamIDX = net.ReadString()
+	
+	  if sql.Query("SELECT * FROM player_mlicence WHERE SteamID64 =" .. SteamIDX) then
+		sql.Query("DELETE FROM player_mlicence WHERE SteamID64 =" ..SteamIDX)
+		DarkRP.notify(pl, 3, 4, nlf.msystem.config.langue[loc].txt26 )
+	else
+		DarkRP.notify(pl, 1, 4, nlf.msystem.config.langue[loc].txt27 )
+    end
+end)
+
+function Msystem_ConvertSteamID( id ) -- --ALL CREDIT FOR THIS COMMAND GOES TO |G4P| Mr.President. https://www.gmodstore.com/users/view/76561197971242755
+    id = string.upper(string.Trim( id ))
+    if string.sub( id, 1, 6 ) == 'STEAM_' then
+        local parts = string.Explode( ':', string.sub(id,7) )
+        local id_64 = (1197960265728 + tonumber(parts[2])) + (tonumber(parts[3]) * 2)
+        local str = string.format('%f',id_64)
+        return '7656'..string.sub( str, 1, string.find(str,'.',1,true)-1 )
+    else
+        if tonumber( id ) ~= nil then
+          local id_64 = tonumber( id:sub(2) )
+          local a = id_64 % 2 == 0 and 0 or  1
+          local b = math.abs(6561197960265728 - id_64 - a) / 2
+          local sid = "STEAM_0:" .. a .. ":" .. (a == 1 and b -1 or b)
+          return sid
+        end
+    end
+end
+
+--ALL CREDIT FOR THIS COMMAND GOES TO THE ULX TEAM. I PULLED THIS OUT SO THAT I COULD NOT HAVE TO RELY ON ULIB FOR A SINGLE FUNCTION.
+function Msystem_getUser( target )
+	if not target then return false end
+
+	local players = player.GetAll()
+	target = target:lower()
+
+	local plyMatch
+
+	-- First, do a full name match in case someone's trying to exploit our target system
+	for _, player in ipairs( players ) do
+		if target == player:Nick():lower() then
+			if not plyMatch then
+				return player
+			else
+				return false
+			end
+		end
+	end
+
+	for _, player in ipairs( players ) do
+		local nameMatch
+		if player:Nick():lower():find( target, 1, true ) then -- No patterns
+			nameMatch = player
+		end
+
+		if plyMatch and nameMatch then -- Already have one
+			return false
+		end
+		if nameMatch then
+			plyMatch = nameMatch
+		end
+	end
+
+	if not plyMatch then
+		return false
+	end
+
+	return plyMatch
+end
+
+net.Receive("M::AdminDataOffline", function(len, pl)
+	if  not table.HasValue(nlf.msystem.config.adminpanel.access, pl:GetUserGroup() ) then return end
+	local SteamIDX = net.ReadString()
+	
+	if string.find(SteamIDX, "STEAM_") then
+		local SteamIDZ = Msystem_ConvertSteamID( SteamIDX )
+	
+		local result = sql.Query("SELECT * FROM player_mlicence WHERE SteamID64 =" .. SteamIDZ)
+			if result then
+				net.Start( "M::AdminFindData" )
+				net.WriteTable( sql.Query("SELECT * FROM player_mlicence WHERE SteamID64 =" .. SteamIDZ ) )
+				net.Send(pl)
+				return 
+			else 
+				DarkRP.notify(pl, 1, 4, nlf.msystem.config.langue[loc].nodata .." " ..  SteamIDZ)
+				return 
+			end 
+		
+	else 
+	
+		local result = sql.Query("SELECT * FROM player_mlicence WHERE SteamID64 =" .. SteamIDX)
+			if result then
+				net.Start( "M::AdminFindData" )
+				net.WriteTable( sql.Query("SELECT * FROM player_mlicence WHERE SteamID64 =" .. SteamIDX) )
+				net.Send(pl)
+				return 
+			else 
+				DarkRP.notify(pl, 1, 4, nlf.msystem.config.langue[loc].nodata .. " " ..  SteamIDX)
+				return
+			end 
+	end 
+end)
+
+net.Receive("M::AdminDataOnline", function(len, pl)
+	if  not table.HasValue(nlf.msystem.config.adminpanel.access, pl:GetUserGroup() ) then return end
+	local NameX = net.ReadString()
+	
+	local target_ply = Msystem_getUser( NameX )
+	local SteamIDX = target_ply:SteamID64()
+	
+	local result = sql.Query("SELECT * FROM player_mlicence WHERE SteamID64 =" .. SteamIDX)
+			if result then
+				net.Start( "M::AdminFindData" )
+				net.WriteTable( sql.Query("SELECT * FROM player_mlicence WHERE SteamID64 =" .. SteamIDX ) )
+				net.Send(pl)
+				return 
+			else 
+				DarkRP.notify(pl, 1, 4, nlf.msystem.config.langue[loc].nodata .. " " ..  SteamIDX)
+				return 
+			end 
+	
 end)
