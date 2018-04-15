@@ -253,8 +253,8 @@ end
 
 Acl.DoClick = function()
 		surface.PlaySound( nlf.msystem.config.panel.soundonclick )
-   	--	net.Start( "nlfadminpanel" )
-	--	net.SendToServer(ply) 
+   		net.Start( "M::OpenAdmin:cl" )
+		net.SendToServer() 
 		
 end
 
@@ -451,5 +451,133 @@ end
 net.Receive("M::HaveLicence", function(len, pl)
     if "shop" == net.ReadString() then
         M_Dermashop( net.ReadEntity() )
+    end
+end)
+
+net.Receive("M::OpenAdmin", function(len, pl)
+local mtabe = net.ReadTable()
+local frame1 = vgui.Create("DFrame")
+    frame1:SetTitle("")
+    frame1:SetSize(900, 600)
+    frame1:SetAlpha(0)
+    frame1:AlphaTo(255, 0.25)
+    frame1:Center()
+    frame1:ShowCloseButton(true)
+    frame1:MakePopup()
+
+    frame1.Paint = function(self, w, h)
+        draw.RoundedBox(0, 0, 0, w, h, Color(0, 0, 0, 255))
+        draw.RoundedBox(0, 0, 0, w, 30, Color(226, 0, 0, 250))
+        draw.DrawText("Admin Panel", "nlf_msystem_textprincipal", self:GetWide() / 2, 4, color_white, TEXT_ALIGN_CENTER)
+        surface.SetDrawColor(0, 0, 0)
+        surface.DrawOutlinedRect(0, 0, w, h)
+		
+		surface.SetMaterial( nlf.msystem.config.searchicon )
+		surface.SetDrawColor( Color( 242, 242, 242, 255) )
+		surface.DrawTexturedRect( 210, 55, 25, 25 )	
+    end
+
+    local DataList = vgui.Create("DListView", frame1)
+    DataList:Dock(FILL)
+    DataList:DockMargin(250, 5, 5, 5)
+    DataList:SetWidth(565)
+    DataList:SetMultiSelect(false)
+    DataList:AddColumn("ID"):SetFixedWidth(30)
+    DataList:AddColumn("SteamID64"):SetFixedWidth(120)
+    DataList:AddColumn("Name"):SetFixedWidth(120)
+	DataList:AddColumn("Prix"):SetFixedWidth(50)
+	DataList:AddColumn("Date"):SetFixedWidth(120)
+	DataList.OnRowRightClick = function(DataList, line)
+        local DropDown = DermaMenu()
+
+        DropDown:AddOption(nlf.msystem.config.langue[loc].txt28, function()
+            net.Start("M::AdminDeletelicence")
+            net.WriteString(tostring(DataList:GetLine(line):GetValue(2)))
+			net.SendToServer()
+            DataList:Clear()
+        end)
+		
+        DropDown:AddOption(nlf.msystem.config.langue[loc].txt29, function()
+            SetClipboardText( tostring(DataList:GetLine(line):GetValue(2)) )
+        end)
+		DropDown:AddOption(nlf.msystem.config.langue[loc].txt30, function()
+            SetClipboardText( tostring(DataList:GetLine(line):GetValue(3)) )
+        end)
+		DropDown:AddOption(nlf.msystem.config.langue[loc].txt31, function()
+            SetClipboardText( tostring(DataList:GetLine(line):GetValue(5)) )
+        end)
+        DropDown:AddSpacer()
+        DropDown:Open()
+    end
+    local OFFEntry = vgui.Create("DTextEntry", frame1)
+    OFFEntry:SetPos(235, 50)
+    OFFEntry:SetSize(200, 30)
+    OFFEntry:SetText(nlf.msystem.config.langue[loc].txt32)
+	
+    local Vcl = vgui.Create("DButton", frame1)
+    Vcl:SetSize(200, 30)
+    Vcl:SetPos(235, 90)
+    Vcl:SetText(nlf.msystem.config.langue[loc].txt33)
+    Vcl:SetFont("fontclose")
+    Vcl:SetTextColor(Color(255, 255, 255, 255))
+    Vcl.Paint = function(self, w, h)
+        local kcol
+
+        if self.hover then
+            kcol = Color(255, 150, 150, 255)
+        else
+            kcol = Color(175, 100, 100)
+        end
+
+        draw.RoundedBoxEx(0, 0, 0, w, h, Color(255, 150, 150, 255), false, false, true, true)
+        draw.RoundedBoxEx(0, 1, 0, w - 2, h - 1, kcol, false, false, true, true)
+    end
+
+    Vcl.DoClick = function()
+			surface.PlaySound( nlf.msystem.config.panel.soundonclick )
+        DataList:Clear()
+			net.Start("M::AdminDataOffline")
+    		net.WriteString( OFFEntry:GetText() )
+    		net.SendToServer()
+    end
+
+    		
+    Vcl.OnCursorEntered = function(self)
+        self.hover = true
+			surface.PlaySound( nlf.msystem.config.panel.soundoncursor )
+    end
+
+    Vcl.OnCursorExited = function(self)
+        self.hover = false
+    end
+
+    local PlayerList = vgui.Create("DListView", frame1)
+    PlayerList:Dock(LEFT)
+    PlayerList:DockMargin(5, 5, 5, 5)
+    PlayerList:SetWidth(200)
+    PlayerList:SetMultiSelect(false)
+    PlayerList:AddColumn(nlf.msystem.config.langue[loc].txt34)
+
+    PlayerList.OnRowSelected = function(PlayerList, line)
+        DataList:Clear()
+        net.Start("M::AdminDataOnline")
+        net.WriteString(tostring(PlayerList:GetLine(line):GetValue(1)))
+        net.SendToServer()
+    end
+	
+	net.Receive("M::AdminFindData", function(len, pl)
+		for k, v in pairs(net.ReadTable()) do
+			DataList:Clear()
+			DataList:AddLine(v.id, v.SteamID64, v.name, v.Licenceprix, v.date)
+		end
+	end)
+	
+    for k, v in pairs(mtabe) do
+    DataList:Clear()
+    DataList:AddLine(v.id, v.SteamID64, v.name, v.Licenceprix, v.date)
+    end
+	
+    for _, v in pairs(player.GetAll()) do
+        PlayerList:AddLine(v:Nick())
     end
 end)
