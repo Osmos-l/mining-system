@@ -2,6 +2,7 @@
 nlf.msystem.config.langue["FR"] = { 
 	money = " €",
 	save = "Sauvegarde l'objet en permanent avec la commande : '!msystemsave' dans la chatbox !",
+	nodata = "Aucune données pour : ",
 	
 	txt1 = "Tu n'as pas assez d'argent !",
 	txt2 = "Tu as fait l'acquisition d'une licence de mineur pour : ",
@@ -26,13 +27,23 @@ nlf.msystem.config.langue["FR"] = {
 	txt21 = "Chariot",
 	txt22 = "Traitement : ",
 	txt23 = "Fonderie",
-	txt24 = "Rendement : "
+	txt24 = "Rendement : ",
+	txt26 = "Suppresion effectuée !",
+	txt27 = "Soucis avec la suppresion !",
+	txt28 = "Supprimer la licence",
+	txt29 = "Copier le SteamID64",
+	txt30 = "Copier le nom",
+	txt31 = "Copier la date",
+	txt32 = "Insére ici le steamID ou SteamID64",
+	txt33 = "Lance la recherche", 
+	txt34 = "Joueur'(s)"
 
  }
 
 nlf.msystem.config.langue["EN"] = { 
 	money = " $",
 	save = "Save the object permanently with the command: '!msystemsave' in the chatbox !",
+	nodata = "No data for : ",
 	
 	txt1 = "You do not have enough money !",
 	txt2 = "You have acquired a minor's license for:",
@@ -57,6 +68,14 @@ nlf.msystem.config.langue["EN"] = {
 	txt21 = "Cart",
 	txt22 = "Treatment : ",
 	txt23 = "Foundry",
-	txt24 = "Yield : "
-
+	txt24 = "Yield : ",
+	txt26 = "Suppressed done!",
+	txt27 = "Worries with the suppresion!",
+	txt28 = "Delete license",
+	txt29 = "Copy SteamID64",
+	txt30 = "Copy the name",
+	txt31 = "Copy date",
+	txt32 = "Insert here the steamID or SteamID64",
+	txt33 = "Start search",
+	txt34 = "Player (s)"
  }
