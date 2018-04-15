@@ -3,6 +3,7 @@ util.AddNetworkString("M::CheckLicence")
 util.AddNetworkString("M::HaveLicence")
 util.AddNetworkString("M::BuyInshop")
 util.AddNetworkString("M::OpenAdmin")
+util.AddNetworkString("M::OpenAdmin:cl")
 util.AddNetworkString("M::AdminDeletelicence")
 util.AddNetworkString("M::AdminDataOffline")
 util.AddNetworkString("M::AdminFindData")  
@@ -20,8 +21,7 @@ net.Receive("M::BuyLicence", function(len, pl)
     if not checkli then
         pl:addMoney("-" .. nlf.msystem.config.amountlicence)
         DarkRP.notify(pl, 3, 4, nlf.msystem.config.langue[loc].txt2.." ".. nlf.msystem.config.amountlicence .. " "..nlf.msystem.config.langue[loc].money)
-		local whatdate = os.date()
-		sql.Query( "INSERT INTO player_mlicence VALUES( NULL, '"..ply:SteamID64().."','"..ply:GetName().."','"..nlf.msystem.config.amountlicence.."','"..whatdate.."' )" ) return
+		sql.Query( "INSERT INTO player_mlicence VALUES( NULL, '"..pl:SteamID64().."','"..pl:GetName().."','"..nlf.msystem.config.amountlicence.."','"..os.date().."' )" ) return
     else
         DarkRP.notify(pl, 1, 4, nlf.msystem.config.langue[loc].txt3) return
     end
