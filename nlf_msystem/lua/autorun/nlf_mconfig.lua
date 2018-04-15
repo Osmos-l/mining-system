@@ -115,3 +115,5 @@ nlf.msystem.config.scrollbar =   Color(175, 100, 100, 255)
 -- Icon 
 
 nlf.msystem.config.npclicenceicon = "msystem/mineuricon.png"
+
+nlf.msystem.config.searchicon = Material( "msystem/search.png" )
