@@ -38,9 +38,27 @@ nlf.msystem.version = "BETA"
 -- You can touch here
 nlf.msystem.config.langue.LocalLang = "FR" -- "FR" or "EN"
 
-nlf.msystem.config.adminpanel.access = {"superadmin", "admin"} -- Player can have access in one group, the order is adminpanel > vipaccess > other 
+nlf.msystem.config.commandforsave = "!msystemsave"
 
-nlf.msystem.config.vipaccess = { "VIP" }
+nlf.msystem.config.commandforadminpanel = "!msystemadmin"
+
+nlf.msystem.config.adminpanel.access = { -- Player can have access in one group, the order is adminpanel > vipaccess > other 
+["superadmin"] = true,
+["admin"] = true,
+} 
+
+nlf.msystem.config.vipaccess = {
+ ["VIP"] = true,
+ }
+
+nlf.msystem.config.usecommandforcop = true -- Can use the command below or only the computer ?
+
+nlf.msystem.config.commandcop = "!licence"
+
+nlf.msystem.config.jobaccess = { -- the name of you'r jobs !
+["Mayor"] = true, 
+["Cops"] = true, 
+}
 
 nlf.msystem.config.amountlicence = 1500 -- the price for the licence mining 
 
@@ -105,11 +123,6 @@ MenuAddVIPButton( "Pioche", 200, "M_Pioche" )
 
 MenuAddADButton( "Charette", 10, "M_Charette") -- For Admin player 
 MenuAddADButton( "Pioche", 5, "M_Pioche")
-
-nlf.msystem.config.button.namecolor = Color( 255, 255, 255 )
-nlf.msystem.config.button.buttonColor = Color( 25, 25, 25, 250 )
-nlf.msystem.config.button.cursorenteredColor =  Color( 100, 100, 100, 150 )
-nlf.msystem.config.scrollbar =   Color(175, 100, 100, 255)
 
 ------------------------------------------------------
 -- Icon 

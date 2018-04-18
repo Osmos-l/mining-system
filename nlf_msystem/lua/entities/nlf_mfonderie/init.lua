@@ -70,6 +70,7 @@ function ENT:Touch(hitEnt)
 			self:SetNWInt("timer", self.Time)
 			self:SetNWEntity("cart", hitEnt)
 			self:SetNWInt("getRock", hitEnt:GetNWInt("rock"))
+			self:EmitSound( "sound/music/processstart.wav" )
 			self.EffectTime = CurTime() + 1
 			hitEnt.CanUse = false
 		end

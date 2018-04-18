@@ -24,12 +24,15 @@ local function M_CreateTable()
 			 if not file.IsDir("msystem/" .. string.lower(game.GetMap()) .. "/process", "DATA") then
 				file.CreateDir("msystem/" .. string.lower(game.GetMap()) .. "/process", "DATA")
 			 end 
+			 if not file.IsDir("msystem/" .. string.lower(game.GetMap()) .. "/computer", "DATA") then
+				file.CreateDir("msystem/" .. string.lower(game.GetMap()) .. "/computer", "DATA")
+			 end 
 end
 
 hook.Add( "InitPostEntity", "M::InstalSQL", timer.Simple( 0.1, function() M_CreateTable() end ) );
 
 concommand.Add("nlf_msystem_reloadtable", function(ply, cmd, args)
-    if !table.HasValue(nlf.msystem.config.adminpanel.access, ply:GetUserGroup()) then return end
+    if not nlf.msystem.config.adminpanel.access[ ply:GetUserGroup() ] then return end
        
 
 	if (sql.TableExists("player_mlicence"))then
@@ -51,7 +54,7 @@ function M_CheckMyLicence( ply )
 end 
 
 concommand.Add("nlf_msystem_deletelicence", function(ply, cmd, args)
-    if !table.HasValue(nlf.msystem.config.adminpanel.access, ply:GetUserGroup()) then return end
+    if not nlf.msystem.config.adminpanel.access[ ply:GetUserGroup() ] then return end
         local SteamIDX = args[1]
 
         if not SteamIDX then
@@ -124,12 +127,26 @@ local function SpawnMsystemEnt()
             NPCINFO:Spawn()
         end
     end)
+	
+		   timer.Simple(1, function()
+	
+        for _, v in pairs(ents.FindByClass("nlf_mcomputer")) do v:Remove() end
+
+        for k, v in pairs(file.Find("msystem/" .. string.lower(game.GetMap()) .. "/computer/*.txt", "DATA")) do
+            local vaultPosFile = file.Read("msystem/" .. string.lower(game.GetMap()) .. "/computer/" .. v, "DATA")
+            local spawnNumber = string.Explode(" ", vaultPosFile)
+            local NPCINFO = ents.Create("nlf_mcomputer")
+            NPCINFO:SetPos(Vector(spawnNumber[1], spawnNumber[2], spawnNumber[3]))
+            NPCINFO:SetAngles(Angle(tonumber(spawnNumber[4]), spawnNumber[5], spawnNumber[6]))
+            NPCINFO:Spawn()
+        end
+    end)
 end
 hook.Add("InitPostEntity", "M::SpawnENT", SpawnMsystemEnt)
 hook.Add("PostCleanupMap", "M::SpawnENTCleanup", SpawnMsystemEnt)
 
 local  function Msaveposs(ply)
-	if !table.HasValue(nlf.msystem.config.adminpanel.access, ply:GetUserGroup()) then return  end
+	if not nlf.msystem.config.adminpanel.access[ ply:GetUserGroup() ]then return  end
 	if not file.IsDir("msystem/" .. string.lower(game.GetMap()), "DATA") then return end
 	
 	for _, ent in pairs(ents.FindByClass("nlf_mlicence")) do
@@ -159,20 +176,27 @@ local  function Msaveposs(ply)
 		file.Delete("msystem/" .. string.lower(game.GetMap()) .. "/process/process_" .. _ .. ".txt")
 		file.Write("msystem/" .. string.lower(game.GetMap()) .. "/process/process_" .. _ .. ".txt", pos.x .. " " .. pos.y .. " " .. pos.z .. " " .. ang.p .. " " .. ang.y .. " " .. ang.r)
 	end
+	
+		for _,	ent in pairs(ents.FindByClass("nlf_mcomputer")) do
+
+		local pos, ang = ent:GetPos(), ent:GetAngles()
+		file.Delete("msystem/" .. string.lower(game.GetMap()) .. "/computer/computer_" .. _ .. ".txt")
+		file.Write("msystem/" .. string.lower(game.GetMap()) .. "/computer/computer_" .. _ .. ".txt", pos.x .. " " .. pos.y .. " " .. pos.z .. " " .. ang.p .. " " .. ang.y .. " " .. ang.r)
+	end
 	SpawnMsystemEnt()
 end
 
-hook.Add( "PlayerSay", "nlf_msystemcommand", function( ply, text, team )
+hook.Add( "PlayerSay", "nlf_msystemcommand", function( ply, text )
 	
 	
-	if  table.HasValue(nlf.msystem.config.adminpanel.access, ply:GetUserGroup()) and text == "!msystemsave" then
+	if  nlf.msystem.config.adminpanel.access[ ply:GetUserGroup() ] and text == nlf.msystem.config.commandforsave then
 		Msaveposs(ply)
 		 DarkRP.notify(ply, 3, 4, nlf.msystem.config.langue[loc].txt13 )
 		return ""
 		
 	end
 	
-	if  table.HasValue(nlf.msystem.config.adminpanel.access, ply:GetUserGroup()) and text == "!msystemadmin" then
+	if nlf.msystem.config.adminpanel.access[ ply:GetUserGroup() ] and text == nlf.msystem.config.commandforadminpanel then
 	
 		local result = sql.Query("SELECT * FROM player_mlicence")
 		if result then
@@ -188,10 +212,17 @@ hook.Add( "PlayerSay", "nlf_msystemcommand", function( ply, text, team )
 			return ""
 		end 
 	end
+	
+	if nlf.msystem.config.usecommandforcop == true and text == nlf.msystem.config.commandcop then
+	if not nlf.msystem.config.jobaccess[ team.GetName( ply:Team() ) ] then DarkRP.notify(ply, 3, 4, nlf.msystem.config.langue[loc].noacces )return end 
+			net.Start( "M::Jobspanel" )
+			net.Send(ply)
+		return ""
+	end
 end)
 
 net.Receive("M::OpenAdmin:cl", function(len, pl)
-	if  not table.HasValue(nlf.msystem.config.adminpanel.access, pl:GetUserGroup() ) then return end
+	if  not tnlf.msystem.config.adminpanel.access[ pl:GetUserGroup() ] then return end
 	
 	local result = sql.Query("SELECT * FROM player_mlicence")
 		if result then
@@ -209,7 +240,7 @@ net.Receive("M::OpenAdmin:cl", function(len, pl)
 end)
 
 net.Receive("M::AdminDeletelicence", function(len, pl)
-	if  not table.HasValue(nlf.msystem.config.adminpanel.access, pl:GetUserGroup() ) then return end
+	if  not nlf.msystem.config.adminpanel.access[ pl:GetUserGroup() ] then return end
 	local SteamIDX = net.ReadString()
 	
 	  if sql.Query("SELECT * FROM player_mlicence WHERE SteamID64 =" .. SteamIDX) then
@@ -280,7 +311,7 @@ function Msystem_getUser( target )
 end
 
 net.Receive("M::AdminDataOffline", function(len, pl)
-	if  not table.HasValue(nlf.msystem.config.adminpanel.access, pl:GetUserGroup() ) then return end
+	if  not nlf.msystem.config.adminpanel.access[ pl:GetUserGroup() ] then return end
 	local SteamIDX = net.ReadString()
 	
 	if string.find(SteamIDX, "STEAM_") then
@@ -313,7 +344,7 @@ net.Receive("M::AdminDataOffline", function(len, pl)
 end)
 
 net.Receive("M::AdminDataOnline", function(len, pl)
-	if  not table.HasValue(nlf.msystem.config.adminpanel.access, pl:GetUserGroup() ) then return end
+	if  not nlf.msystem.config.adminpanel.access[ pl:GetUserGroup() ] then return end
 	local NameX = net.ReadString()
 	
 	local target_ply = Msystem_getUser( NameX )
@@ -330,4 +361,49 @@ net.Receive("M::AdminDataOnline", function(len, pl)
 				return 
 			end 
 	
+end)
+
+net.Receive("M::CopCheckLicence", function(len, pl)
+    if not nlf.msystem.config.jobaccess[team.GetName(pl:Team())] then return end
+    local namejoueur = net.ReadString()
+    local user = Msystem_getUser(namejoueur)
+
+    if user then
+        if not M_CheckMyLicence(user) then
+            DarkRP.notify(pl, 1, 4, nlf.msystem.config.langue[loc].txt35.." " .. namejoueur)
+
+            return
+        else
+            DarkRP.notify(pl, 0, 4, nlf.msystem.config.langue[loc].txt36.." " .. namejoueur)
+
+            return
+        end
+    else
+        DarkRP.notify(pl, 1, 4, namejoueur .. " "..nlf.msystem.config.langue[loc].txt37)
+
+        return
+    end
+end)
+
+net.Receive("M::CopDeleteLicence", function(len, pl)
+    if not nlf.msystem.config.jobaccess[team.GetName(pl:Team())] then return end
+    local namejoueur = net.ReadString()
+    local user = Msystem_getUser(namejoueur)
+
+    if not user then
+        DarkRP.notify(pl, 1, 4, namejoueur .. " "..nlf.msystem.config.langue[loc].txt37)
+
+        return
+    end
+
+    if not M_CheckMyLicence(user) then
+        DarkRP.notify(pl, 1, 4, namejoueur .. " "..nlf.msystem.config.langue[loc].txt38)
+
+        return
+    end
+
+    sql.Query("DELETE FROM player_mlicence WHERE SteamID64 =" .. user:SteamID64())
+    DarkRP.notify(pl, 3, 4, nlf.msystem.config.langue[loc].txt26)
+	DarkRP.notify(user, 1, 4, pl:Name() .. " "..nlf.msystem.config.langue[loc].txt39)
+    return
 end)

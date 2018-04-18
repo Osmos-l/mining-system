@@ -8,6 +8,9 @@ util.AddNetworkString("M::AdminDeletelicence")
 util.AddNetworkString("M::AdminDataOffline")
 util.AddNetworkString("M::AdminFindData")  
 util.AddNetworkString("M::AdminDataOnline")
+util.AddNetworkString("M::Jobspanel")
+util.AddNetworkString("M::CopCheckLicence")
+util.AddNetworkString("M::CopDeleteLicence")
 local loc =  nlf.msystem.config.langue.LocalLang
 
 
@@ -28,11 +31,9 @@ net.Receive("M::BuyLicence", function(len, pl)
 end)
 
 net.Receive("M::CheckLicence", function(len, pl)
-	local Where = net.ReadString()
 
 	if M_CheckMyLicence(pl) then
 		net.Start( "M::HaveLicence" )
-		net.WriteString( Where )
 		net.WriteEntity( net.ReadEntity() )
 		net.Send(pl) return 
     else
@@ -46,9 +47,9 @@ net.Receive("M::BuyInshop", function(len, pl)
 	local npc = net.ReadEntity() 
 	local cat = {}
 	
-	if  table.HasValue(nlf.msystem.config.adminpanel.access, pl:GetUserGroup() ) then
+	if  nlf.msystem.config.adminpanel.access[ pl:GetUserGroup() ] then
 		 cat = nlf.msystem.config.button.admin[k] 
-	elseif table.HasValue(nlf.msystem.config.vipaccess, pl:GetUserGroup() ) then
+	elseif nlf.msystem.config.vipaccess[ pl:GetUserGroup() ] then
 		cat = nlf.msystem.config.button.vip[k] 
 	else 
 		cat = nlf.msystem.config.button.basique[k] 

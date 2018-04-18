@@ -4,7 +4,7 @@
 local loc =  nlf.msystem.config.langue.LocalLang
 
 local MSystemPickup = {"nlf_mbarilrock", "nlf_mcart", "nlf_minirock" }
-local img = Material("msystem/keyede.png")
+
   hook.Add("HUDPaint", "MSystem::Use", function()
   local entity = LocalPlayer():GetEyeTrace().Entity
   
@@ -16,7 +16,7 @@ local img = Material("msystem/keyede.png")
 			draw.SimpleText(nlf.msystem.config.langue[loc].txt14, "MSystem_Use", ScrW()/1.1, ScrH()/2, Color(200, 200, 200), TEXT_ALIGN_CENTER)
 			
 			surface.SetDrawColor( 255, 255, 255, 255 )
-			surface.SetMaterial(img)
+			surface.SetMaterial(Material("msystem/keyede.png"))
 		    surface.DrawTexturedRect(ScrW()/1.2, ScrH()/2, 20, 20)
 		end 
    end)
