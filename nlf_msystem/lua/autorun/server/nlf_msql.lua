@@ -222,7 +222,7 @@ hook.Add( "PlayerSay", "nlf_msystemcommand", function( ply, text )
 end)
 
 net.Receive("M::OpenAdmin:cl", function(len, pl)
-	if  not tnlf.msystem.config.adminpanel.access[ pl:GetUserGroup() ] then return end
+	if  not nlf.msystem.config.adminpanel.access[ pl:GetUserGroup() ] then return end
 	
 	local result = sql.Query("SELECT * FROM player_mlicence")
 		if result then
