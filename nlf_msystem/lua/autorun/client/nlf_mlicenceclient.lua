@@ -209,7 +209,7 @@ local scroll = vgui.Create("DScrollPanel", DPanelB)
     end
    
     function scrollbar.btnGrip:Paint( w, h )
-        draw.RoundedBox( 0, 4, 0, w, h, nlf.msystem.config.scrollbar )
+        draw.RoundedBox( 0, 4, 0, w, h, Color(175, 100, 100, 255) )
     end
    
     function scrollbar.btnUp:Paint( w, h )
@@ -228,6 +228,10 @@ IconModel:SetSize(200, 200)
 function IconModel:LayoutEntity(Entity)
     return
 end
+local headpos = IconModel.Entity:GetBonePosition(IconModel.Entity:LookupBone("ValveBiped.Bip01_Head1"))
+IconModel:SetLookAt(headpos)
+IconModel:SetCamPos(headpos - Vector(-15, 0, 0))
+IconModel.Entity:SetEyeTarget(headpos - Vector(-15, 0, 0))
 
 
 if table.HasValue(nlf.msystem.config.adminpanel.access, LocalPlayer():GetUserGroup()) then 
@@ -269,11 +273,6 @@ end
 
 end
 
-local headpos = IconModel.Entity:GetBonePosition(IconModel.Entity:LookupBone("ValveBiped.Bip01_Head1"))
-IconModel:SetLookAt(headpos)
-IconModel:SetCamPos(headpos - Vector(-15, 0, 0))
-IconModel.Entity:SetEyeTarget(headpos - Vector(-15, 0, 0))
-
 local text_panel = vgui.Create("DLabel", DPanelO)
 text_panel:SetPos(275, 70)
 text_panel:SetSize(HtmlPanel:GetWide() - 275, 200)
@@ -290,15 +289,15 @@ for k, v in pairs(nlf.msystem.config.button) do
         local DermaR1Button = vgui.Create("DButton", scroll)
         DermaR1Button:SetText(v.name)
         DermaR1Button:SetFont("nlf_msystem_panel")
-        DermaR1Button:SetTextColor(nlf.msystem.config.button.namecolor)
+        DermaR1Button:SetTextColor(Color( 255, 255, 255 ))
         DermaR1Button:SetPos(24, 0 + AddButoon)
         DermaR1Button:SetSize(HtmlPanel:GetWide() - 50, 30)
 
         DermaR1Button.Paint = function(self, w, h)
-            draw.RoundedBox(4, 2, 2, w - 4, h - 4, nlf.msystem.config.button.buttonColor)
+            draw.RoundedBox(4, 2, 2, w - 4, h - 4, Color( 25, 25, 25, 250 ))
 
             if self.hover then
-                draw.RoundedBox(4, 1, 1, w - 2, h - 2, nlf.msystem.config.button.cursorenteredColor)
+                draw.RoundedBox(4, 1, 1, w - 2, h - 2, Color( 100, 100, 100, 150 ))
             end
         end
 
@@ -313,7 +312,6 @@ for k, v in pairs(nlf.msystem.config.button) do
 					net.SendToServer()	
             elseif v.action == "shop" then
 					net.Start( "M::CheckLicence" )
-					net.WriteString( "shop" )
 					net.WriteEntity( net.ReadEntity() )
 					net.SendToServer()					
             elseif v.action == "exit" then
@@ -374,9 +372,9 @@ end
 
 local Categories = {}
 	
-	if  table.HasValue(nlf.msystem.config.adminpanel.access, LocalPlayer():GetUserGroup() ) then
+	if nlf.msystem.config.adminpanel.access[ LocalPlayer():GetUserGroup() ] then
 		table.insert( Categories, { Name = "ADMIN", Table = nlf.msystem.config.button.admin } )
-	elseif table.HasValue(nlf.msystem.config.vipaccess, LocalPlayer():GetUserGroup() ) then
+	elseif nlf.msystem.config.vipaccess[ LocalPlayer():GetUserGroup() ] then
 		table.insert( Categories, { Name = "VIP", Table = nlf.msystem.config.button.vip } )
 	else 
 		table.insert( Categories, { Name = "Basique", Table = nlf.msystem.config.button.basique } )
@@ -449,9 +447,7 @@ for k, v in pairs( Categories ) do
 end 
 
 net.Receive("M::HaveLicence", function(len, pl)
-    if "shop" == net.ReadString() then
         M_Dermashop( net.ReadEntity() )
-    end
 end)
 
 net.Receive("M::OpenAdmin", function(len, pl)
@@ -581,3 +577,5 @@ local frame1 = vgui.Create("DFrame")
         PlayerList:AddLine(v:Nick())
     end
 end)
+
+
