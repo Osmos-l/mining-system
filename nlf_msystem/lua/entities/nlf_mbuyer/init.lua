@@ -8,13 +8,13 @@ function ENT:Initialize()
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_NONE)
 	self:SetSolid(SOLID_VPHYSICS)
-	local phys = self:GetPhysicsObject()
-	phys:Wake()
 	self:SetNWInt("baril", 0)
 	self:SetNWInt("distance", 512)
 	self:SetPos(self:GetPos())
 	self.jailWall = true
 	self.CanUse = true
+		local phys = self:GetPhysicsObject()
+	phys:Wake()
 end
 
 function ENT:SpawnFunction( ply, tr, ClassName )
@@ -62,7 +62,7 @@ function ENT:Touch(hitEnt)
 				hitEnt.CanUse = false 
 				self:SetNWInt("baril", 1 + self:GetNWInt("baril"))
 		local owner = hitEnt:Getowning_ent()
-		if owner then owner:addMoney(hitEnt:GetNWInt("amount") or NULL) DarkRP.notify( owner, 3, 4, nlf.msystem.config.langue[loc].txt18.." ".. hitEnt:GetNWInt("amount") or 0 .. " "..nlf.msystem.config.langue[loc].money ) end 
+		if owner then owner:addMoney(hitEnt:GetNWInt("amount") or NULL) DarkRP.notify( owner, 3, 4, nlf.msystem.config.langue[loc].txt18.." ".. hitEnt:GetNWInt("amount") .. " "..nlf.msystem.config.langue[loc].money ) end 
 		hitEnt:SetNWInt("amount", 0)
 			end;
 		end

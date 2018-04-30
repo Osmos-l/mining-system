@@ -11,6 +11,8 @@ util.AddNetworkString("M::AdminDataOnline")
 util.AddNetworkString("M::Jobspanel")
 util.AddNetworkString("M::CopCheckLicence")
 util.AddNetworkString("M::CopDeleteLicence")
+util.AddNetworkString("M::PanelBuyer")
+util.AddNetworkString("M::IllegalSellrock")
 local loc =  nlf.msystem.config.langue.LocalLang
 
 
@@ -42,6 +44,27 @@ net.Receive("M::CheckLicence", function(len, pl)
 	
 end)
 
+local function M_CheckItem(item, user)
+	if item == "pioche" then
+   		if user:HasWeapon("m_pickaxe") then 
+   			return true
+   		else 
+   			return false
+   		end 
+
+	elseif item == "cart" then
+		 local allcart = ents.FindByClass("nlf_mcart")
+   		 if not allcart then print("no cart all") return false end
+
+   			 for k, v in pairs( allcart ) do 
+   		 		if v:Getowning_ent() == user then
+   		 			return true end
+   			 end 
+   			 
+   		return false 
+	end 
+end 
+
 net.Receive("M::BuyInshop", function(len, pl)
 	local k = net.ReadUInt(16)
 	local npc = net.ReadEntity() 
@@ -61,15 +84,14 @@ net.Receive("M::BuyInshop", function(len, pl)
 	if not npc:GetClass() == "nlf_mlicence" then return end 
 	if not npc:GetModel() == nlf.msystem.config.skin then return end 
 	if pl:getDarkRPVar( "money" ) < cat.PRIX then DarkRP.notify(pl, 1, 4, nlf.msystem.config.langue[loc].txt1) return end 
-	if  cat.ENT == "M_Pioche" and pl.pioche == 1 or  cat.ENT == "M_Charette" and pl.cart == 1 then DarkRP.notify(pl, 1, 4, nlf.msystem.config.langue[loc].txt5) return end 
+	if  cat.ENT == "M_Pioche" and M_CheckItem("pioche", pl) or  cat.ENT == "M_Charette" and M_CheckItem("cart", pl) then DarkRP.notify(pl, 1, 4, nlf.msystem.config.langue[loc].txt5) return end 
 	
 	
 	if pl:GetPos():DistToSqr(npc:GetPos())>200 then 
 	pl:addMoney("-"..cat.PRIX)
 	if  cat.ENT == "M_Pioche" then 
 			pl:Give("m_pickaxe")
-			pl.pioche = 1
-				DarkRP.notify(pl, 3, 4, nlf.msystem.config.langue[loc].txt6 ) return 
+			DarkRP.notify(pl, 3, 4, nlf.msystem.config.langue[loc].txt6 ) return 
 		elseif  cat.ENT == "M_Charette" then
 			local prop1 = ents.Create("nlf_mcart")
 			prop1:Setowning_ent( pl )
@@ -80,9 +102,44 @@ net.Receive("M::BuyInshop", function(len, pl)
 			prop1:SetAngles(pl:GetAngles())
 			prop1:Spawn()
 			prop1:Activate()
-			pl.cart = 1
 			DarkRP.notify(pl, 3, 4, nlf.msystem.config.langue[loc].txt7 ) return 
 	end  
 	end 
 	
+end)
+
+local function M_BarilPick(ply, ent)
+	if not IsValid( ent ) then return end
+	if not ent:GetClass() == "nlf_mbarilrock" then return end
+	ent:SetNWEntity( "picker", ply )
+end 
+hook.Add( "PhysgunPickup", "M_PhysgunSetPicker", M_BarilPick )
+hook.Add( "PlayerUse", "M_UseSetPicker", M_BarilPick )
+hook.Add( "GravGunOnPickedUp", "M_GravSetPicker", M_BarilPick )
+
+net.Receive("M::IllegalSellrock", function(len, pl)
+    local npc = net.ReadEntity()
+    if not npc:GetClass() == "nlf_mbuyerillegal" then return end
+
+    local ments = ents.FindByClass("nlf_mbarilrock")
+    if not ments[1] then
+     npc:EmitSound("vo/npc/alyx/al_car_crazy08.wav", 100, 100) return 
+ 	end
+
+    for k, v in pairs(ments) do
+        if pl:GetPos():DistToSqr(npc:GetPos()) > 200 and v:GetPos():DistToSqr(npc:GetPos()) > 200 then
+            if v:GetNWEntity("picker") == pl then
+            	v:EmitSound("vo/outland_07/barn/al_barn_therewego.wav", 100, 100)
+                v.CanUse = false
+                pl:addMoney(v:GetNWInt("amount"))
+                v:Remove()
+                DarkRP.notify(pl, 3 , 4, "Tu as reçu : " ..v:GetNWInt("amount").. " $" )
+                if nlf.msystem.config.wantedonsell then
+                    pl:wanted(pl, "Vente illégal de roche", nlf.msystem.config.wantedtime)
+                end
+             else 
+             		npc:EmitSound("vo/outland_07/barn/al_barn_pulsewhat.wav", 100, 100) --al_barn_pulsewhat
+            end
+        end
+    end
 end)

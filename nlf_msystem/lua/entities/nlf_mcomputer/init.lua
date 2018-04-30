@@ -8,7 +8,7 @@ function ENT:Initialize()
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_NONE)
 	self:SetSolid(SOLID_VPHYSICS)
-	self:SetUseType(SIMPLE_USE);
+	self:SetUseType(SIMPLE_USE)
 	local phys = self:GetPhysicsObject()
 	phys:Wake()
 end
@@ -36,8 +36,8 @@ function ENT:AcceptInput(name, activator, caller)
      if not nlf.msystem.config.jobaccess[ team.GetName( caller:Team() ) ] then DarkRP.notify(caller, 3, 4, nlf.msystem.config.langue[loc].noacces ) return end 
 			net.Start( "M::Jobspanel" )
 			net.Send(caller)
-		self:EmitSound("sound/music/computerstart.wav")
-	end;
+		self:EmitSound("music/computerstart.wav", 70, 100 )
+	end
 
 function ENT:OnRemove()
 	if not IsValid(self) then return end

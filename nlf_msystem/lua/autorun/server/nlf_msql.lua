@@ -27,9 +27,12 @@ local function M_CreateTable()
 			 if not file.IsDir("msystem/" .. string.lower(game.GetMap()) .. "/computer", "DATA") then
 				file.CreateDir("msystem/" .. string.lower(game.GetMap()) .. "/computer", "DATA")
 			 end 
+			 if not file.IsDir("msystem/" .. string.lower(game.GetMap()) .. "/buyerillegal", "DATA") then
+				file.CreateDir("msystem/" .. string.lower(game.GetMap()) .. "/buyerillegal", "DATA")
+			 end 
 end
 
-hook.Add( "InitPostEntity", "M::InstalSQL", timer.Simple( 0.1, function() M_CreateTable() end ) );
+hook.Add( "InitPostEntity", "M::InstalSQL", timer.Simple( 0.1, function() M_CreateTable() end ) )
 
 concommand.Add("nlf_msystem_reloadtable", function(ply, cmd, args)
     if not nlf.msystem.config.adminpanel.access[ ply:GetUserGroup() ] then return end
@@ -141,49 +144,83 @@ local function SpawnMsystemEnt()
             NPCINFO:Spawn()
         end
     end)
+
+		   timer.Simple(1.2, function()
+	
+        for _, v in pairs(ents.FindByClass("nlf_mbuyerillegal")) do v:Remove() end
+
+        for k, v in pairs(file.Find("msystem/" .. string.lower(game.GetMap()) .. "/buyerillegal/*.txt", "DATA")) do
+            local vaultPosFile = file.Read("msystem/" .. string.lower(game.GetMap()) .. "/buyerillegal/" .. v, "DATA")
+            local spawnNumber = string.Explode(" ", vaultPosFile)
+            local NPCINFO = ents.Create("nlf_mbuyerillegal")
+            NPCINFO:SetPos(Vector(spawnNumber[1], spawnNumber[2], spawnNumber[3]))
+            NPCINFO:SetAngles(Angle(tonumber(spawnNumber[4]), spawnNumber[5], spawnNumber[6]))
+            NPCINFO:Spawn()
+        end
+    end)   
 end
 hook.Add("InitPostEntity", "M::SpawnENT", SpawnMsystemEnt)
 hook.Add("PostCleanupMap", "M::SpawnENTCleanup", SpawnMsystemEnt)
 
-local  function Msaveposs(ply)
-	if not nlf.msystem.config.adminpanel.access[ ply:GetUserGroup() ]then return  end
-	if not file.IsDir("msystem/" .. string.lower(game.GetMap()), "DATA") then return end
-	
-	for _, ent in pairs(ents.FindByClass("nlf_mlicence")) do
+local function Msaveposs(ply)
+    if not nlf.msystem.config.adminpanel.access[ply:GetUserGroup()] then return end
+    if not file.IsDir("msystem/" .. string.lower(game.GetMap()), "DATA") then return end
 
-		local pos, ang = ent:GetPos(), ent:GetAngles()
-		file.Delete("msystem/" .. string.lower(game.GetMap()) .. "/mlicence/npc_" .. _ .. ".txt")
-		file.Write("msystem/" .. string.lower(game.GetMap()) .. "/mlicence/npc_" .. _ .. ".txt", pos.x .. " " .. pos.y .. " " .. pos.z .. " " .. ang.p .. " " .. ang.y .. " " .. ang.r)
-	end
-	
-	for _, ent in pairs(ents.FindByClass("nlf_mbuyer")) do
+    for _, v in pairs(file.Find("msystem/" .. string.lower(game.GetMap()) .. "/mlicence/*.txt", "DATA")) do
+        file.Delete("msystem/" .. string.lower(game.GetMap()) .. "/mlicence/" .. v .. ".txt")
+    end
 
-		local pos, ang = ent:GetPos(), ent:GetAngles()
-		file.Delete("msystem/" .. string.lower(game.GetMap()) .. "/buyer/buyer_" .. _ .. ".txt")
-		file.Write("msystem/" .. string.lower(game.GetMap()) .. "/buyer/buyer_" .. _ .. ".txt", pos.x .. " " .. pos.y .. " " .. pos.z .. " " .. ang.p .. " " .. ang.y .. " " .. ang.r)
-	end
-	
-	for _,	ent in pairs(ents.FindByClass("nlf_rock")) do
+    for _, ent in pairs(ents.FindByClass("nlf_mlicence")) do
+        local pos, ang = ent:GetPos(), ent:GetAngles()
+        file.Write("msystem/" .. string.lower(game.GetMap()) .. "/mlicence/npc_" .. _ .. ".txt", pos.x .. " " .. pos.y .. " " .. pos.z .. " " .. ang.p .. " " .. ang.y .. " " .. ang.r)
+    end
 
-		local pos, ang = ent:GetPos(), ent:GetAngles()
-		file.Delete("msystem/" .. string.lower(game.GetMap()) .. "/rock/rock_" .. _ .. ".txt")
-		file.Write("msystem/" .. string.lower(game.GetMap()) .. "/rock/rock_" .. _ .. ".txt", pos.x .. " " .. pos.y .. " " .. pos.z .. " " .. ang.p .. " " .. ang.y .. " " .. ang.r)
-	end
-	
-		for _,	ent in pairs(ents.FindByClass("nlf_mfonderie")) do
+    for _, v in pairs(file.Find("msystem/" .. string.lower(game.GetMap()) .. "/buyer/*.txt", "DATA")) do
+        file.Delete("msystem/" .. string.lower(game.GetMap()) .. "/buyer/" .. v .. ".txt")
+    end
 
-		local pos, ang = ent:GetPos(), ent:GetAngles()
-		file.Delete("msystem/" .. string.lower(game.GetMap()) .. "/process/process_" .. _ .. ".txt")
-		file.Write("msystem/" .. string.lower(game.GetMap()) .. "/process/process_" .. _ .. ".txt", pos.x .. " " .. pos.y .. " " .. pos.z .. " " .. ang.p .. " " .. ang.y .. " " .. ang.r)
-	end
-	
-		for _,	ent in pairs(ents.FindByClass("nlf_mcomputer")) do
+    for _, ent in pairs(ents.FindByClass("nlf_mbuyer")) do
+        local pos, ang = ent:GetPos(), ent:GetAngles()
+        file.Write("msystem/" .. string.lower(game.GetMap()) .. "/buyer/buyer_" .. _ .. ".txt", pos.x .. " " .. pos.y .. " " .. pos.z .. " " .. ang.p .. " " .. ang.y .. " " .. ang.r)
+    end
 
-		local pos, ang = ent:GetPos(), ent:GetAngles()
-		file.Delete("msystem/" .. string.lower(game.GetMap()) .. "/computer/computer_" .. _ .. ".txt")
-		file.Write("msystem/" .. string.lower(game.GetMap()) .. "/computer/computer_" .. _ .. ".txt", pos.x .. " " .. pos.y .. " " .. pos.z .. " " .. ang.p .. " " .. ang.y .. " " .. ang.r)
-	end
-	SpawnMsystemEnt()
+    for _, v in pairs(file.Find("msystem/" .. string.lower(game.GetMap()) .. "/rock/*.txt", "DATA")) do
+        file.Delete("msystem/" .. string.lower(game.GetMap()) .. "/rock/" .. v .. ".txt")
+    end
+
+    for _, ent in pairs(ents.FindByClass("nlf_rock")) do
+        local pos, ang = ent:GetPos(), ent:GetAngles()
+        file.Write("msystem/" .. string.lower(game.GetMap()) .. "/rock/rock_" .. _ .. ".txt", pos.x .. " " .. pos.y .. " " .. pos.z .. " " .. ang.p .. " " .. ang.y .. " " .. ang.r)
+    end
+
+    for _, v in pairs(file.Find("msystem/" .. string.lower(game.GetMap()) .. "/process/*.txt", "DATA")) do
+        file.Delete("msystem/" .. string.lower(game.GetMap()) .. "/process/" .. v .. ".txt")
+    end
+
+    for _, ent in pairs(ents.FindByClass("nlf_mfonderie")) do
+        local pos, ang = ent:GetPos(), ent:GetAngles()
+        file.Write("msystem/" .. string.lower(game.GetMap()) .. "/process/process_" .. _ .. ".txt", pos.x .. " " .. pos.y .. " " .. pos.z .. " " .. ang.p .. " " .. ang.y .. " " .. ang.r)
+    end
+
+    for _, v in pairs(file.Find("msystem/" .. string.lower(game.GetMap()) .. "/computer/*.txt", "DATA")) do
+        file.Delete("msystem/" .. string.lower(game.GetMap()) .. "/computer/" .. v .. ".txt")
+    end
+
+    for _, ent in pairs(ents.FindByClass("nlf_mcomputer")) do
+        local pos, ang = ent:GetPos(), ent:GetAngles()
+        file.Write("msystem/" .. string.lower(game.GetMap()) .. "/computer/computer_" .. _ .. ".txt", pos.x .. " " .. pos.y .. " " .. pos.z .. " " .. ang.p .. " " .. ang.y .. " " .. ang.r)
+    end
+
+    for _, v in pairs(file.Find("msystem/" .. string.lower(game.GetMap()) .. "/buyerillegal/*.txt", "DATA")) do
+        file.Delete("msystem/" .. string.lower(game.GetMap()) .. "/buyerillegal/" .. v .. ".txt")
+    end
+
+    for _, ent in pairs(ents.FindByClass("nlf_mbuyerillegal")) do
+        local pos, ang = ent:GetPos(), ent:GetAngles()
+        file.Write("msystem/" .. string.lower(game.GetMap()) .. "/buyerillegal/buyerillegal_" .. _ .. ".txt", pos.x .. " " .. pos.y .. " " .. pos.z .. " " .. ang.p .. " " .. ang.y .. " " .. ang.r)
+    end
+
+    SpawnMsystemEnt()
 end
 
 hook.Add( "PlayerSay", "nlf_msystemcommand", function( ply, text )

@@ -5,27 +5,28 @@ include("shared.lua")
 local loc =  nlf.msystem.config.langue.LocalLang
 function ENT:Initialize()
 	self:SetModel("models/props_lab/reciever_cart.mdl")
-	timer.Simple(0.5, function()
+	self:PhysicsInit(SOLID_VPHYSICS)
+	self:SetMoveType(MOVETYPE_NONE)
+	self:SetSolid(SOLID_VPHYSICS)
+	self:SetNWInt("rock", 0)
+	self:SetNWInt("distance", 512)
+	self:SetNWInt("width", 205)
+	self:SetNWInt("getRock", 0)
+	self:SetPos(self:GetPos())
+	self.CanUse = true
+	self.JailWall = true
+	local phys = self:GetPhysicsObject()
+	phys:Wake()
+		timer.Simple(0.5, function()
 		local prop1 = ents.Create("nlf_mbac")
 		prop1:SetPos(self:GetPos() + self:GetAngles():Forward()*-53)
 		prop1:SetAngles(self:GetAngles())
 		prop1:Spawn()
 		prop1:Activate()
 		prop1:SetParent(self)
-		prop1:SetSolid(SOLID_VPHYSICS)
 		prop1:SetLocalAngles( Angle( 0, 260, 0 ) )
+		prop1.JailWall = true
 	end)
-	
-	self:PhysicsInit(SOLID_VPHYSICS)
-	self:SetMoveType(MOVETYPE_VPHYSICS)
-	self:SetSolid(SOLID_VPHYSICS)
-	self:SetNWInt("rock", 0)
-	self:SetNWInt("distance", 512);
-	self:SetNWInt("width", 205)
-	self:SetNWInt("getRock", 0)
-	self:SetPos(self:GetPos())
-	self.CanUse = true
-	self.JailWall = true
 end
 
 function ENT:SpawnFunction( ply, tr, ClassName )
@@ -47,16 +48,15 @@ function ENT:SpawnFunction( ply, tr, ClassName )
 
 end
 
-function ENT:Touch(hitEnt)
+function ENT:StartTouch(hitEnt)
 	if not IsValid(hitEnt) then return end
 	if hitEnt:IsPlayer() then return end
 	if not hitEnt:GetClass() ==  "nlf_mcart" then return end
 	
 	if self.CanUse then
-	if hitEnt:Getowning_ent() == NULL  then return end
+	if hitEnt:Getowning_ent() == nil or hitEnt:Getowning_ent() == NULL or not hitEnt:Getowning_ent()  then return end
 	local ply = hitEnt:Getowning_ent()
 	
-	if ply.notif == NULL then ply.notif = true end 
 	
 	if M_CheckMyLicence( ply ) then
 		if (hitEnt:GetNWInt("rock") > 0) and (!hitEnt:IsPlayerHolding()) then
@@ -70,13 +70,12 @@ function ENT:Touch(hitEnt)
 			self:SetNWInt("timer", self.Time)
 			self:SetNWEntity("cart", hitEnt)
 			self:SetNWInt("getRock", hitEnt:GetNWInt("rock"))
-			self:EmitSound( "sound/music/processstart.wav" )
+			self:EmitSound( "music/processstart.wav", 70, 100 )
 			self.EffectTime = CurTime() + 1
 			hitEnt.CanUse = false
 		end
 	else 
-	if ply.notif == true then DarkRP.notify( ply, 1, 4, nlf.msystem.config.langue[loc].txt4  ) 	ply.notif = false end 
-	timer.Simple( 5, function() ply.notif = NULL end )
+	DarkRP.notify( ply, 1, 4, nlf.msystem.config.langue[loc].txt4  ) 
 	end 
 	end
 end
@@ -85,11 +84,11 @@ function ENT:Think()
 
 	if !self.CanUse then
 		local width = ((100/self.SumTime)*(205/100))/10
-		self:SetNWInt("width", self:GetNWInt("width") - width);
+		self:SetNWInt("width", self:GetNWInt("width") - width)
 		self:NextThink(CurTime()+0.1)
 				
 		if self.Time <= CurTime() then
-			self:SetNWInt("width", 205);
+			self:SetNWInt("width", 205)
 			local cart = self:GetNWEntity("cart")
 			if (cart != NULL) then
 				local selfAng = self:GetAngles()

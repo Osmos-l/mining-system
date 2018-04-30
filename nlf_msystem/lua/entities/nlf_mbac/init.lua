@@ -6,9 +6,10 @@ include("shared.lua")
 function ENT:Initialize()
 	self:SetModel("models/props_wasteland/laundry_washer001a.mdl")
 	self:PhysicsInit(SOLID_VPHYSICS)
-	self:SetMoveType(MOVETYPE_VPHYSICS)
+	self:SetMoveType(MOVETYPE_NONE)
 	self:SetSolid(SOLID_VPHYSICS)
-	local phys = self:GetPhysicsObject()
+	self.JailWall = true
+		local phys = self:GetPhysicsObject()
 	phys:Wake()
 end
 

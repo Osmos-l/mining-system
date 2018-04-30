@@ -4,13 +4,13 @@ include("shared.lua");
 util.AddNetworkString( "MSystem:OpenPanelLicence" )
 local loc =  nlf.msystem.config.langue.LocalLang
 function ENT:Initialize()
-	self:SetModel(nlf.msystem.config.skin);
-	self:SetHullType(HULL_HUMAN);
-	self:SetHullSizeNormal();
-	self:SetNPCState(NPC_STATE_SCRIPT);
-	self:SetSolid(SOLID_BBOX);
-	self:SetUseType(SIMPLE_USE);
-	self:SetBloodColor(BLOOD_COLOR_RED);
+	self:SetModel(nlf.msystem.config.skin)
+	self:SetHullType(HULL_HUMAN)
+	self:SetHullSizeNormal()
+	self:SetNPCState(NPC_STATE_SCRIPT)
+	self:SetSolid(SOLID_BBOX)
+	self:SetUseType(SIMPLE_USE)
+	self:SetBloodColor(BLOOD_COLOR_RED)
 	
 end;
 
@@ -40,8 +40,8 @@ function ENT:AcceptInput(name, activator, caller)
 		net.WriteEntity( self )
 		net.Send(caller) 
 					else
-				self:EmitSound("vo/npc/male01/sorry0"..math.random(1, 3)..".wav", 70, 100);
-			end;
-		end;
+				self:EmitSound("vo/npc/male01/sorry0"..math.random(1, 3)..".wav", 70, 100)
+			end
+		end
 		self.nextUse = CurTime() + 1;
-	end;
+	end

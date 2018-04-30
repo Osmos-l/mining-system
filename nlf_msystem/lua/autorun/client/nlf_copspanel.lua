@@ -1,5 +1,21 @@
 local loc =  nlf.msystem.config.langue.LocalLang
 
+local blur = Material("pp/blurscreen")
+
+local function blurPanel(HtmlPanel, amount)
+    local x, y = HtmlPanel:LocalToScreen(0, 0)
+    local scrW, scrH = ScrW(), ScrH()
+    surface.SetDrawColor(255, 255, 255)
+    surface.SetMaterial(blur)
+
+    for i = 1, 6 do
+        blur:SetFloat("$blur", (i / 3) * (amount or 6))
+        blur:Recompute()
+        render.UpdateScreenEffectTexture()
+        surface.DrawTexturedRect(x * -1, y * -1, scrW, scrH)
+    end
+end
+
 local function panellicence(nbr)
 local name
 if nbr == 1 then -- Search Licence
@@ -21,7 +37,6 @@ local frame1 = vgui.Create("DFrame")
         draw.DrawText(name, "nlf_msystem_textprincipal", self:GetWide() / 2, 4, color_white, TEXT_ALIGN_CENTER)
         surface.SetDrawColor(0, 0, 0)
         surface.DrawOutlinedRect(0, 0, w, h)
-		
     end
 	local TextEntry = vgui.Create( "DTextEntry", frame1 )
 	TextEntry:SetPos( frame1:GetWide()*0.2, 50 )
@@ -333,4 +348,103 @@ end
 B5.OnCursorExited = function(self)
    self.hover = false
 end
+end)
+net.Receive("M::PanelBuyer", function(len, ply)
+    local frame1 = vgui.Create("DFrame")
+    frame1:SetTitle("")
+    frame1:SetSize(450, 220)
+    frame1:SetAlpha(0)
+    frame1:AlphaTo(255, 0.25)
+    frame1:Center()
+    frame1:ShowCloseButton(false)
+    frame1:MakePopup()
+
+    frame1.Paint = function(self, w, h)
+        blurPanel(self, 2)
+    draw.RoundedBox(10, 0, 0, w, h, Color( 0, 0, 0, 200 ))
+    draw.RoundedBox(0, 0, 0, w, 30, Color(173, 188, 32))
+        draw.DrawText("Mystérieuse femme !", "nlf_msystem_textprincipal", self:GetWide() / 2, 4, color_white, TEXT_ALIGN_CENTER)
+        surface.SetDrawColor(0, 0, 0)
+        surface.DrawOutlinedRect(0, 0, w, h)
+    end
+
+    local text_panel = vgui.Create("DLabel", frame1)
+    text_panel:SetPos(10, 5)
+    text_panel:SetSize(440, 175)
+    text_panel:SetFont("ChatFont")
+    text_panel:SetTextColor(Color(255, 255, 255, 255))
+    text_panel:SetText("Salut,\nTu as quelque chose pour moi ?\nLa pierre m'intéresse beaucoup tu sais, alors si tu peux en trouver pour moi je pourrais surement  te remercier avec beaucoup d'argent, mais attention personne ne doit savoir que j'existe et encore moins où je suis !") 
+    text_panel:SetWrap(true)
+
+    local B1 = vgui.Create("DButton", frame1)
+    B1:SetSize(130, 50)
+    B1:SetPos(30, 170)
+    B1:SetText("Voilà pour toi !")
+    B1:SetFont("ChatFont")
+    B1:SizeToContents()
+    B1:SetTextColor(Color(255, 255, 255, 255))
+
+    B1.Paint = function(self, w, h)
+        local kcol
+
+        if self.hover then
+            kcol = Color(138, 150, 27)
+        else
+            kcol = Color(173, 188, 32)
+        end
+
+        draw.RoundedBoxEx(0, 0, 0, w, h, Color(173, 188, 32), false, false, true, true)
+        draw.RoundedBoxEx(0, 1, 0, w - 2, h - 1, kcol, false, false, true, true)
+    end
+
+    B1.DoClick = function()
+        surface.PlaySound(nlf.msystem.config.panel.soundonclick)
+        net.Start("M::IllegalSellrock")
+        net.WriteEntity(net.ReadEntity())
+        net.SendToServer()
+        frame1:Remove()
+    end
+
+    B1.OnCursorEntered = function(self)
+        self.hover = true
+        surface.PlaySound(nlf.msystem.config.panel.soundoncursor)
+    end
+
+    B1.OnCursorExited = function(self)
+        self.hover = false
+    end
+
+    local B2 = vgui.Create("DButton", frame1)
+    B2:SetSize(130, 50)
+    B2:SetPos(230, 170)
+    B2:SetText("Je n'ai rien pour toi")
+    B2:SetFont("ChatFont")
+    B2:SizeToContents()
+    B2:SetTextColor(Color(255, 255, 255, 255))
+
+    B2.Paint = function(self, w, h)
+        local kcol
+
+        if self.hover then
+            kcol = Color(138, 150, 27)
+        else
+            kcol = Color(173, 188, 32)
+        end
+        draw.RoundedBoxEx(0, 0, 0, w, h, Color(173, 188, 32), false, false, true, true)
+        draw.RoundedBoxEx(0, 1, 0, w - 2, h - 1, kcol, false, false, true, true)
+    end
+
+    B2.DoClick = function()
+        surface.PlaySound(nlf.msystem.config.panel.soundonclick)
+        frame1:Remove()
+    end
+
+    B2.OnCursorEntered = function(self)
+        self.hover = true
+        surface.PlaySound(nlf.msystem.config.panel.soundoncursor)
+    end
+
+    B2.OnCursorExited = function(self)
+        self.hover = false
+    end
 end)

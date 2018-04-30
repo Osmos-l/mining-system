@@ -12,6 +12,7 @@ function ENT:Initialize()
 	phys:Wake()
 	self:SetNWInt("amount", 0)
 	self:SetNWInt("distance", 512)
+	self:SetNWEntity( "picker", nil )
 	self:SetPos(self:GetPos() + Vector(0,0,20))
 	self.jailWall = true
 	self.CanUse = true

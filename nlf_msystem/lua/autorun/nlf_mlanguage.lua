@@ -1,4 +1,10 @@
 
+nlf.msystem.config.buyerillegalsay = {
+"Psssst ... Viens voir !",
+"Tu as quelque chose qui m'intéresse beaucoup ", 
+"Toi, viens j'ai un marché à te proposer."
+}
+
 nlf.msystem.config.langue["FR"] = { 
 	money = " €",
 	save = "Sauvegarde l'objet en permanent avec la commande : '!msystemsave' dans la chatbox !",

@@ -30,7 +30,7 @@ function ENT:AcceptInput(name, activator, caller)
 	end;
 
 function ENT:Touch(hitEnt)
-	if not IsValid(hitEnt) then print( hitEnt ) return end
+	if not IsValid(hitEnt) then return end
 		if (self.CanUse) then
 		if (hitEnt:GetClass() == "nlf_minirock") and (self:GetNWInt("rock") < nlf.msystem.config.maxrock) then
 			if (hitEnt:GetNWInt("rock") > 0) then
