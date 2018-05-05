@@ -7,7 +7,8 @@ local MSystemPickup = {"nlf_mbarilrock", "nlf_mcart", "nlf_minirock" }
 
   hook.Add("HUDPaint", "MSystem::Use", function()
   local entity = LocalPlayer():GetEyeTrace().Entity
-  
+  if entity == nil then return end
+		
    	if entity:GetPos():Distance( LocalPlayer():GetPos() ) > 90 then return end
 	
 		if table.HasValue( MSystemPickup, entity:GetClass()) then
